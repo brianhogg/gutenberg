@@ -1111,7 +1111,7 @@ describe( 'global styles renderer', () => {
 			);
 		} );
 
-		it( 'handles legacy responsive block styles', () => {
+		it( 'ignores deprecated responsive block state aliases', () => {
 			const tree = {
 				styles: {
 					blocks: {
@@ -1146,7 +1146,7 @@ describe( 'global styles renderer', () => {
 			);
 
 			expect( result ).toEqual(
-				':root :where(.wp-block-button){color: red;}@media (width <= 480px){:root :where(.wp-block-button){color: blue;}}'
+				':root :where(.wp-block-button){color: red;}'
 			);
 		} );
 
