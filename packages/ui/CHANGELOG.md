@@ -13,6 +13,7 @@
 
 ### Enhancements
 
+-   `Dialog`, `AlertDialog`: Add an opt-in `auto` popup size that fits content within the responsive minimum and viewport inset ([#84559](https://github.com/WordPress/gutenberg/pull/84559)).
 -   `Select`, `Combobox`, `Autocomplete`, and the select controls: Tighten popup item spacing, use 16px selection indicators, and align group labels and separators with item content ([#84393](https://github.com/WordPress/gutenberg/pull/84393)).
 -   `Button`, `IconButton`: Use the shared `Spinner` for loading indicators ([#84321](https://github.com/WordPress/gutenberg/pull/84321)).
 -   `useEnableWpCompatOverlaySlot`: Mark as recommended for use in a WordPress environment ([#84305](https://github.com/WordPress/gutenberg/pull/84305)).
