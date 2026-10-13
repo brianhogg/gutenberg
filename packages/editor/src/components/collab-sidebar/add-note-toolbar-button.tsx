@@ -1,5 +1,5 @@
 import { ToolbarButton } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import {
 	privateApis as blockEditorPrivateApis,
 	store as blockEditorStore,
@@ -8,6 +8,7 @@ import {
 import { useSelect } from '@wordpress/data';
 import { getUnregisteredTypeHandlerName } from '@wordpress/blocks';
 import { store as keyboardShortcutsStore } from '@wordpress/keyboard-shortcuts';
+import { store as preferencesStore } from '@wordpress/preferences';
 import { comment as commentIcon } from '@wordpress/icons';
 import { unlock } from '../../lock-unlock';
 
@@ -15,79 +16,93 @@ const { NoteIconToolbarSlotFill } = unlock( blockEditorPrivateApis );
 
 type NoteToolbarButtonProps = {
 	clientId: string;
-	isOpen: boolean;
+	count: number;
 	onClick: () => void;
 };
 
 function NoteToolbarButton( {
 	clientId,
-	isOpen,
+	count,
 	onClick,
 }: NoteToolbarButtonProps ) {
-	const block = useSelect(
-		( select ) => select( blockEditorStore ).getBlock( clientId ),
+	const { canAddNote, shortcut, showIconLabels } = useSelect(
+		( select ) => {
+			const { getBlockName, isBlockValid } = select( blockEditorStore );
+			const blockName = getBlockName( clientId );
+			return {
+				canAddNote:
+					isBlockValid( clientId ) &&
+					blockName !== 'core/freeform' &&
+					blockName !== getUnregisteredTypeHandlerName(),
+				shortcut: select(
+					keyboardShortcutsStore
+				).getShortcutRepresentation( 'core/editor/new-note' ),
+				showIconLabels: select( preferencesStore ).get(
+					'core',
+					'showIconLabels'
+				),
+			};
+		},
 		[ clientId ]
 	);
-	const shortcut = useSelect(
-		( select ) =>
-			select( keyboardShortcutsStore ).getShortcutRepresentation(
-				'core/editor/new-note'
-			),
-		[]
-	);
 
-	if (
-		! block?.isValid ||
-		block?.name === getUnregisteredTypeHandlerName()
-	) {
+	if ( ! canAddNote ) {
 		return null;
 	}
 
-	/*
-	 * The reason a classic block cannot take a note belongs in the description,
-	 * not the label: the button has to keep answering to "Add note" so screen
-	 * reader users and tests can still find it while it is disabled.
-	 */
-	const isDisabled = block?.name === 'core/freeform';
-	const description = isDisabled
-		? __( 'Convert to blocks to add notes.' )
-		: undefined;
-
 	return (
 		<ToolbarButton
-			className="editor-add-note-toolbar-button"
 			icon={ commentIcon }
 			label={ __( 'Add note' ) }
-			description={ description }
-			onClick={ onClick }
-			aria-haspopup="dialog"
-			aria-expanded={ isOpen }
-			isPressed={ isOpen }
-			disabled={ isDisabled }
+			// With text labels on, a button with text keeps its icon and never
+			// shows its label.
+			text={ count && ! showIconLabels ? String( count ) : undefined }
+			description={
+				count
+					? sprintf(
+							// translators: %d: Number of notes on the block.
+							_n(
+								'This block has %d note.',
+								'This block has %d notes.',
+								count
+							),
+							count
+						)
+					: undefined
+			}
 			shortcut={ shortcut ?? undefined }
-			showTooltip
+			onClick={ onClick }
 		/>
 	);
 }
 
 type AddNoteToolbarButtonProps = {
-	clientId: string;
-	isOpen: boolean;
+	/**
+	 * Number of notes on the selected block.
+	 */
+	count: number;
+
+	/**
+	 * Called with the block's client ID to start a new note.
+	 */
 	onClick: ( clientId: string ) => void;
 };
 
 export function AddNoteToolbarButton( {
-	clientId,
-	isOpen,
+	count,
 	onClick,
 }: AddNoteToolbarButtonProps ) {
 	return (
 		<NoteIconToolbarSlotFill.Fill>
-			<NoteToolbarButton
-				clientId={ clientId }
-				isOpen={ isOpen }
-				onClick={ () => onClick( clientId ) }
-			/>
+			{ ( { clientIds }: { clientIds: string[] } ) =>
+				clientIds.length === 1 && (
+					<NoteToolbarButton
+						clientId={ clientIds[ 0 ] }
+						count={ count }
+						onClick={ () => onClick( clientIds[ 0 ] ) }
+					/>
+				)
+			}
 		</NoteIconToolbarSlotFill.Fill>
 	);
 }

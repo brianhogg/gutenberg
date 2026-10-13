@@ -81,7 +81,7 @@ test.describe( 'Block Notes', () => {
 		).toBeFocused();
 	} );
 
-	test( 'toolbar button closes the new note form it opened', async ( {
+	test( 'toolbar button hints at the notes a block already has', async ( {
 		editor,
 		page,
 		blockNoteUtils,
@@ -91,30 +91,16 @@ test.describe( 'Block Notes', () => {
 			attributes: { content: 'Howdy!' },
 			comment: 'Test comment',
 		} );
-		await editor.insertBlock( {
-			name: 'core/paragraph',
-			attributes: { content: 'Testing block comments' },
-		} );
+		await editor.selectBlocks(
+			editor.canvas.getByRole( 'document', { name: 'Block: Paragraph' } )
+		);
 		const addNoteButton = page
 			.getByRole( 'toolbar', { name: 'Block tools' } )
 			.getByRole( 'button', { name: 'Add note', exact: true } );
-		const form = page.getByRole( 'textbox', {
-			name: 'New note',
-			exact: true,
-		} );
 
-		await addNoteButton.click();
-		await expect( form ).toBeFocused();
-		await expect( addNoteButton ).toHaveAttribute(
-			'aria-expanded',
-			'true'
-		);
-
-		await addNoteButton.click();
-		await expect( form ).toBeHidden();
-		await expect( addNoteButton ).toHaveAttribute(
-			'aria-expanded',
-			'false'
+		await expect( addNoteButton ).toHaveText( '1' );
+		await expect( addNoteButton ).toHaveAccessibleDescription(
+			'This block has 1 note.'
 		);
 	} );
 
