@@ -6,6 +6,10 @@
 
 -   Raise the minimum required Node.js version to `>=22.13.0`, for stable `require(esm)` support ([#84313](https://github.com/WordPress/gutenberg/pull/84313)).
 
+### Bug Fixes
+
+-   Allow clicking block toolbar buttons that overlap the right edge of the Customizer sidebar ([#84567](https://github.com/WordPress/gutenberg/pull/84567)).
+
 ## 5.57.0 (2026-10-07)
 
 ### Bug Fixes
